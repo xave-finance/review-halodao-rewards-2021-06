@@ -1,0 +1,46 @@
+{
+  "name": "hardhat-project",
+  "scripts": {
+    "test": "npx hardhat --network localhost test",
+    "deploy:hardhat": "npx hardhat run scripts/deployAllLocal.ts",
+    "deploy:local": "npx hardhat run scripts/deployAllLocal.ts --network \"localhost\"",
+    "deployAll:kovan": "npx hardhat run scripts/deployAllKovan.ts --network \"kovan\"",
+    "deploy-verify:kovan": "npx hardhat run scripts/deployVerifyAllKovan.ts --network \"kovan\"",
+    "about:deploy:rnbw": "echo 'deploys only rnbw governance token to network of choice. Sample usage: yarn/npm run deploy:rnbw --network [kovan | mainnet | etc]'",
+    "deploy:rnbw": "npx hardhat run scripts/deployHalo.ts",
+    "about:deploy:vesting": "echo 'deploys only rnbw governance token to network of choice. Sample usage: yarn/npm run deploy:vesting --network [kovan | mainnet | etc]'",
+    "deploy:vesting": "npx hardhat run scripts/deployVesting.ts",
+    "verify": "npx hardhat verify",
+    "about:verify": "echo 'verifies a predeployed unverified contract. sample usage: yarn/npm run verify -- --network mainnet [DEPLOYED_CONTRACT_ADDRESS] [CTOR ARG 1] [CTOR ARG 2] [CTOR ARG N]'",
+    "mint:halo-kovan": "npx hardhat run scripts/deployHalo.ts --network \"kovan\"",
+    "deploy:onlyrewards-kovan": "npx hardhat run scripts/deployOnlyRewardsContract.ts --network \"kovan\"",
+    "deploy:bscTestnet": "npx hardhat run scripts/deployAllKovan.ts --network \"bscTestnet\"",
+    "deploy:matic": "npx hardhat run scripts/deployAllMatic.ts --network \"matic\"",
+    "deploy:moonbase": "npx hardhat run scripts/deployAllMoonbase.ts --network \"moonbase\"",
+    "node": "npx hardhat node",
+    "about:recompile": "echo 'Sometimes verification doesn't work off the bat and needs a recompile'",
+    "recompile": "rm -rf artifacts && rm -rf cache && npx hardhat compile"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-etherscan": "^2.1.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/test-helpers": "^0.5.10",
+    "@types/chai": "^4.2.16",
+    "chai": "^4.3.3",
+    "ethereum-waffle": "^3.3.0",
+    "ethers": "^5.0.31",
+    "hardhat": "^2.1.2",
+    "solidity-coverage": "^0.7.16"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.4.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^14.14.37",
+    "chai-bignumber": "^3.0.0",
+    "dotenv": "^8.2.0",
+    "hardhat-gas-reporter": "^1.0.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  }
+}

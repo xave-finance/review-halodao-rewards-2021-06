@@ -1,0 +1,22 @@
+__pycache__
+.history
+.hypothesis/
+build/
+reports/
+.env
+*.db
+contracts/TestContracts
+hardhat/artifacts
+hardhat/cache
+hardhat/node_modules
+.DS_Store
+hardhat/.DS_Store
+
+node_modules
+
+#Hardhat files
+cache
+artifacts
+
+coverage.json
+coverage

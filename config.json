@@ -1,0 +1,12 @@
+{
+    "client_name": "HaloDAO",
+    "commit_hash": "1cff704a4065256f30bb50858626aa7ef5552268",
+    "date": "June 2021",
+    "date_interval": "June 28 to July 2, 2021",
+    "issues": [],
+    "person_days": "10",
+    "project_name": "Halo Rewards",
+    "review_period": "1 week",
+    "source_repository": "https://github.com/HaloDAO/halo-rewards.git",
+    "template": "./Readme.md.mustache"
+}
