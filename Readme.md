@@ -5,7 +5,7 @@
           </span>
           <br />
           <span id="project-value">
-               Halo Rewards
+               Project name
           </span>
     </div>
      <div id="details">
@@ -15,7 +15,7 @@
                </span>
                <br />
                <span class="details-value">
-                    HaloDAO
+                    Client name
                </span>
                <br />
                <span class="splash-title">
@@ -50,10 +50,11 @@
  - [Issues Summary](#issues-summary)
  - [Executive summary](#executive-summary)
      - [Week 1](#week-1)
-     - [Week 2](#week-2)
  - [Scope](#scope)
  - [Recommendations](#recommendations)
  - [Issues](#issues)
+     - [The number of minted tokens might not be the expected one](#the-number-of-minted-tokens-might-not-be-the-expected-one)
+     - [Can set immutable for halo in HaloHalo](#can-set-immutable-for-halo-in-halohalo)
  - [Artifacts](#artifacts)
      - [Surya](#surya)
      - [Coverage](#coverage)
@@ -63,11 +64,11 @@
 
 ## Details
 
-- **Client** HaloDAO
+- **Client** Client name
 - **Date** June 2021
 - **Lead reviewer** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn))
 - **Reviewers** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn)), Andrei Simion ([@andreiashu](https://twitter.com/andreiashu))
-- **Repository**: [Halo Rewards](https://github.com/HaloDAO/halo-rewards.git)
+- **Repository**: [Project name](https://github.com/HaloDAO/halo-rewards.git)
 - **Commit hash** `1cff704a4065256f30bb50858626aa7ef5552268`
 - **Technologies**
   - Solidity
@@ -78,27 +79,23 @@
 | SEVERITY       |    OPEN    |    CLOSED    |
 |----------------|:----------:|:------------:|
 |  Informational  |  0  |  0  |
-|  Minor  |  0  |  0  |
+|  Minor  |  1  |  0  |
 |  Medium  |  0  |  0  |
-|  Major  |  0  |  0  |
+|  Major  |  1  |  0  |
 
 ## Executive summary
 
-This report represents the results of the engagement with **HaloDAO** to review **Halo Rewards**.
+This report represents the results of the engagement with **Client name** to review **Project name**.
 
-The review was conducted over the course of **1 week** from **June 28 to July 2, 2021**. A total of **10 person-days** were spent reviewing the code.
+The review was conducted over the course of **2 weeks** from **October 15 to November 15, 2020**. A total of **5 person-days** were spent reviewing the code.
 
 ### Week 1
 
 During the first week, we ...
 
-### Week 2
-
-The second week was ...
-
 ## Scope
 
-The initial review focused on the [Halo Rewards](https://github.com/HaloDAO/halo-rewards.git) repository, identified by the commit hash `1cff704a4065256f30bb50858626aa7ef5552268`. ...
+The initial review focused on the [Project name](https://github.com/HaloDAO/halo-rewards.git) repository, identified by the commit hash `1cff704a4065256f30bb50858626aa7ef5552268`. ...
 
 <!-- We focused on manually reviewing the codebase, searching for security issues such as, but not limited to, re-entrancy problems, transaction ordering, block timestamp dependency, exception handling, call stack depth limitation, integer overflow/underflow, self-destructible contracts, unsecured balance, use of origin, costly gas patterns, architectural problems, code readability. -->
 
@@ -107,10 +104,6 @@ The initial review focused on the [Halo Rewards](https://github.com/HaloDAO/halo
 - HaloToken.sol
 - AmmRewards.sol
 - RewardsManager.sol
-
-**Excludes:**
-- LollipopPool.sol
-- LPOP.sol
 
 ## Recommendations
 
@@ -122,144 +115,130 @@ A good rule of thumb is to have 100% test coverage. This does not guarantee the 
 
 -->
 
-<!-- ### Set up Continuous Integration
-
-Use one of the platforms that offer Continuous Integration services and implement a list of actions that compile, test, run coverage and create alerts when the pipeline fails.
-
-Because the repository is hosted on GitHub, the most painless way to set up the Continuous Integration is through [GitHub Actions](https://docs.github.com/en/free-pro-team@latest/actions).
-
-Setting up the workflow can start based on this example template.
-
-
-```yml
-name: Continuous Integration
-
-on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
-
-jobs:
-  build:
-    name: Build and test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12.x]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: cp ./config.sample.js ./config.js
-    - run: npm test
-
-  coverage:
-    name: Coverage
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12.x]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: cp ./config.sample.js ./config.js
-    - run: npm run coverage
-    - uses: actions/upload-artifact@v2
-      with:
-        name: Coverage ${{ matrix.node-version }}
-        path: |
-          coverage/
-```
-
-This CI template activates on pushes and pull requests on the **master** branch.
-
-```yml
-on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
-```
-
-It uses an [Ubuntu Docker](https://hub.docker.com/_/ubuntu) image as a base for setting up the project.
-
-```yml
-    runs-on: ubuntu-latest
-```
-
-Multiple Node.js versions can be used to check integration. However, because this is not primarily a Node.js project, multiple versions don't provide added value.
-
-```yml
-    strategy:
-      matrix:
-        node-version: [12.x]
-```
-
-A script item should be added in the `scripts` section of [package.json](./code/package.json) that runs all tests.
-
-```json
-{
-   "script": {
-      "test": "buidler test"
-   }
-}
-```
-
-This can then be called by running `npm test` after setting up the dependencies with `npm ci`.
-
-If any hidden variables need to be defined, you can set them up in a local version of `./config.sample.js` (locally named `./config.js`). If you decide to do that, you should also add `./config.js` in `.gitignore` to make sure no hidden variables are pushed to the public repository. The sample config file `./config.sample.js` should be sufficient to pass the test suite.
-
-```yml
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: cp ./config.sample.js ./config.js
-    - run: npm test
-```
-
-You can also choose to run coverage and upload the generated artifacts.
-
-```yml
-    - run: npm run coverage
-    - uses: actions/upload-artifact@v2
-      with:
-        name: Coverage ${{ matrix.node-version }}
-        path: |
-          coverage/
-```
-
-At the moment, checking the artifacts is not [that](https://github.community/t/browsing-artifacts/16954) [easy](https://github.community/t/need-clarification-on-github-actions/16027/2), because one needs to download the zip archive, unpack it and check it. However, the coverage can be checked in the **Actions** section once it's set up.
-
--->
-
-<!-- ### Contract size
-
-The contracts are dangerously close to the hard limit defined by [EIP-170](https://eips.ethereum.org/EIPS/eip-170), specifically **24676 bytes**.
-
-Depending on the Solidity compiler version and the optimization runs, the contract size might increase over the hard limit. As stated in [the Solidity documentation](https://solidity.readthedocs.io/en/latest/using-the-compiler.html#using-the-commandline-compiler), increasing the number of optimizer runs increases the contract size.
-
-> If you want the initial contract deployment to be cheaper and the later function executions to be more expensive, set it to `--optimize-runs=1`. If you expect many transactions and do not care for higher deployment cost and output size, set `--optimize-runs` to a high number.
-
-Even if you remove the unused internal functions, it will not reduce the contract size because the Solidity compiler shakes that unused code out of the generated bytecode.
-
-#### DELEGATECALL approach
-
-Another way to improve contract size is by breaking them into multiple smaller contracts, grouped by functionality and using `DELEGATECALL` to execute that code. A standard that defines code splitting and selective code upgrade is the [EIP-2535 Diamond Standard](https://eips.ethereum.org/EIPS/eip-2535), which is an extension of [Transparent Contract Standard](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1538.md). A detailed explanation, documentation and implementations can be found in the [EIP-2535](https://eips.ethereum.org/EIPS/eip-2535). However, the current EIP is in **Draft** status, which means the interface, implementation, and overall architecture might change. Another thing to keep in mind is that using this pattern increases the gas cost. -->
-
 ## Issues
+
+
+### [The number of minted tokens might not be the expected one](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/2)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Major](https://img.shields.io/static/v1?label=Severity&message=Major&color=ff3b30&style=flat-square)
+
+**Description**
+
+A user can stake HALO tokens for HALOHALO tokens by calling the `enter` method.
+
+
+[code/contracts/HaloHalo.sol#L23](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L23)
+```solidity
+  function enter(uint256 _amount) public {
+```
+
+The number of HALO tokens is retrieved:
+
+
+[code/contracts/HaloHalo.sol#L27-L28](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L27-L28)
+```solidity
+    // Gets the amount of Halo locked in the contract
+    uint256 totalHalo = halo.balanceOf(address(this));
+```
+
+Next, the total number of shares is retrieved, which matches the number of minted tokens:
+
+
+[code/contracts/HaloHalo.sol#L29-L30](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L29-L30)
+```solidity
+    // Gets the amount of HALOHALO in existence
+    uint256 totalShares = totalSupply();
+```
+
+If this is the first time someone enters the stake, the conditional is true, and a ratio of 1:1 is minted based on the amount entering the contract.
+
+
+[code/contracts/HaloHalo.sol#L31-L33](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L31-L33)
+```solidity
+    // If no HALOHALO exists, mint it 1:1 to the amount put in
+    if (totalShares == 0 || totalHalo == 0) {
+      _mint(msg.sender, _amount);
+```
+
+i.e., An actor entering with 100 HALO tokens will receive 100 HALOHALO tokens.
+
+If tokens were already minted and HALO tokens exist in the contract, a formula is used to calculate how many tokens should be minted.
+
+
+[code/contracts/HaloHalo.sol#L35-L37](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L35-L37)
+```solidity
+      // Calculate and mint the amount of HALOHALO the Halo is worth. The ratio will change overtime, as HALOHALO is burned/minted and Halo deposited from LP rewards.
+      uint256 haloHaloAmount = _amount.mul(totalShares).div(totalHalo);
+      _mint(msg.sender, haloHaloAmount);
+```
+
+Let's assume an actor is the first one to stake tokens in the contract. They send 100 HALO tokens to the contact. Because they are the first ones, the contract mints 1:1 tokens, effectively 100 HALOHALO tokens.
+
+The second actor enters with 100 HALO too. This time, the formula is activated.
+
+$hh_{amount} = \frac{h_{enter} * hh_{minted}}{h_{locked}}$
+
+A number of $hh_{amount} = 100$ get minted. 
+
+This is because the formula uses the amount of tokens which the user wants to lock ($h_{enter} = 100$), the number of tokens already minted ($hh_{minted} = 100$, from the previous user) and the total locked tokens in the contract ($h_{locked} = 100$).
+
+minted tokens = $\frac{100 * 100}{100} = 100$
+
+If everything works well, a ratio of 1:1 will always be respected. However, if anyone sends HALO tokens to the contract, the 1:1 ratio is forever changed for all users staking tokens.
+
+Let's assume that after the 2 users deposited 100 HALO tokens each, and they received 100 HALOHALO tokens, a malicious user sends 100 HALO tokens to the contract without calling `enter`, but by using the `transfer` method.
+
+We should be aware of the current state of the contract right now.
+
+$hh_{minted} = 200$
+
+$h_{locked} = 300$
+
+The number of $h_{locked}$ is equal to 300 because the actual balance of the token is retrieved by using the `balanceOf` method, not an internal accounting method.
+
+If a 3rd user wants to lock 100 HALO tokens, a different ratio of HALOHALO tokens will be minted for them. Using the formula we obtain the number of minted tokens.
+
+Minted tokens = $\frac{100 * 200}{300} = 66.66$
+
+This allows a malicious actor to manipulate the ratio of minted tokens.
+
+**Recommendation**
+
+Use internal accounting to retrieve the number of locked tokens.
+
+
+
+---
+
+
+### [Can set immutable for `halo` in `HaloHalo`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/1)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+
+**Description**
+
+The Halo token contract is set when the `HaloHalo` contract is deployed.
+
+
+[code/contracts/HaloHalo.sol#L16](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L16)
+```solidity
+    halo = _halo;
+```
+
+The `halo` variable is defined as a state variable.
+
+
+[code/contracts/HaloHalo.sol#L10](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L10)
+```solidity
+  IERC20 public halo;
+```
+
+Because this state variable is never changed, it can be defined as `immutable` for a significant gas cost.
+
+**Recommendation**
+
+Set `halo` as `immutable`.
+
+
+---
 
 
 ## Artifacts
@@ -268,41 +247,164 @@ Another way to improve contract size is by breaking them into multiple smaller c
 
 Sūrya is a utility tool for smart contract systems. It provides a number of visual outputs and information about the structure of smart contracts. It also supports querying the function call graph in multiple ways to aid in the manual inspection and control flow analysis of contracts.
 
-<!-- **Contracts Description Table**
+**Files Description Table**
 
-```text
-surya mdreport report.md Contract.sol
-```
+| File Name            | SHA-1 Hash                               |
+| -------------------- | ---------------------------------------- |
+| ./AmmRewards.sol     | 49b19808853abe8c5c8bfb439d83ee196314a616 |
+| ./HaloHalo.sol       | 4d1f4fa884b7499e9ab33fcb423b88ea05ac2242 |
+| ./HaloToken.sol      | aadb215941a561bc6f3005d0f19a09a7775476bf |
+| ./RewardsManager.sol | c0ee996398307a8e777783f8b1b1ef22af2e11c1 |
 
--->
+**Contracts Description Table**
+
+|      Contract      |                Type                 |             Bases             |                |                           |
+| :----------------: | :---------------------------------: | :---------------------------: | :------------: | :-----------------------: |
+|         └          |          **Function Name**          |        **Visibility**         | **Mutability** |       **Modifiers**       |
+|                    |                                     |                               |                |                           |
+|   **AmmRewards**   |           Implementation            |   ReentrancyGuard, Ownable    |                |                           |
+|         └          |            <Constructor>            |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |             poolLength              |           Public ❗️            |                |            NO❗️            |
+|         └          |                 add                 |           Public ❗️            |       🛑        |         onlyOwner         |
+|         └          |                 set                 |           Public ❗️            |       🛑        |         onlyOwner         |
+|         └          |       setRewardTokenPerSecond       |          External ❗️           |       🛑        | onlyOwnerOrRewardsManager |
+|         └          |         pendingRewardToken          |          External ❗️           |                |            NO❗️            |
+|         └          |           massUpdatePools           |          External ❗️           |       🛑        |            NO❗️            |
+|         └          |             updatePool              |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |               deposit               |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |              withdraw               |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |               harvest               |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |         withdrawAndHarvest          |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |          emergencyWithdraw          |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |          setRewardsManager          |           Public ❗️            |       🛑        |         onlyOwner         |
+|                    |                                     |                               |                |                           |
+|    **HaloHalo**    |           Implementation            |             ERC20             |                |                           |
+|         └          |            <Constructor>            |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |                enter                |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |                leave                |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |       getCurrentHaloHaloPrice       |           Public ❗️            |                |            NO❗️            |
+|                    |                                     |                               |                |                           |
+|   **HaloToken**    |           Implementation            | ERC20, ERC20Burnable, Ownable |                |                           |
+|         └          |            <Constructor>            |           Public ❗️            |       🛑        |           ERC20           |
+|         └          |              setCapped              |          External ❗️           |       🛑        |         onlyOwner         |
+|         └          |                mint                 |          External ❗️           |       🛑        |         onlyOwner         |
+|                    |                                     |                               |                |                           |
+| **RewardsManager** |           Implementation            |            Ownable            |                |                           |
+|         └          |            <Constructor>            |           Public ❗️            |       🛑        |            NO❗️            |
+|         └          |         releaseEpochRewards         |          External ❗️           |       🛑        |         onlyOwner         |
+|         └          |           setVestingRatio           |          External ❗️           |       🛑        |         onlyOwner         |
+|         └          |         setRewardsContract          |          External ❗️           |       🛑        |         onlyOwner         |
+|         └          |         setHaloHaloContract         |          External ❗️           |       🛑        |         onlyOwner         |
+|         └          |           getVestingRatio           |          External ❗️           |                |            NO❗️            |
+|         └          |         getRewardsContract          |          External ❗️           |                |            NO❗️            |
+|         └          |         getHaloHaloContract         |          External ❗️           |                |            NO❗️            |
+|         └          |     transferToHaloHaloContract      |          Internal 🔒           |       🛑        |                           |
+|         └          | convertAndTransferToRewardsContract |          Internal 🔒           |       🛑        |                           |
+
+**Legend**
+
+| Symbol | Meaning                   |
+| :----: | ------------------------- |
+|   🛑    | Function can modify state |
+|   💵    | Function is payable       |
 
 #### Graphs
 
-<!-- ***Contract***
+***AmmRewards***
 
 ```text
-surya graph Contract.sol | dot -Tpng > ./static/Contract_graph.png
+surya graph AmmRewards.sol | dot -Tpng > ./static/AmmRewards_graph.png
 ```
 
-![Contract Graph](./static/Contract_graph.png)
+![AmmRewards Graph](./static/surya/AmmRewards_graph.png)
+
+***HaloHalo***
 
 ```text
-surya inheritance Contract.sol | dot -Tpng > ./static/Contract_inheritance.png
+surya graph HaloHalo.sol | dot -Tpng > ./static/HaloHalo_graph.png
 ```
 
-![Contract Inheritance](./static/Contract_inheritance.png)
+![HaloHalo Graph](./static/surya/HaloHalo_graph.png)
+
+***HaloToken***
 
 ```text
-Use Solidity Visual Auditor
+surya graph HaloToken.sol | dot -Tpng > ./static/HaloToken_graph.png
 ```
 
-![Contract UML](./static/Contract_uml.png) -->
+![HaloToken Graph](./static/surya/HaloToken_graph.png)
+
+***RewardsManager***
+
+```text
+surya graph RewardsManager.sol | dot -Tpng > ./static/RewardsManager_graph.png
+```
+
+![RewardsManager Graph](./static/surya/RewardsManager_graph.png)
+
+#### Inheritance
+
+![Inheritance](./static/surya/inheritance.png)
 
 #### Describe
 
-<!-- ```text
-$ npx surya describe ./Contract.sol
-``` -->
+```text
+$ npx surya describe *.sol                                   
+
+ +  AmmRewards (ReentrancyGuard, Ownable)
+    - [Pub] <Constructor> #
+    - [Pub] poolLength
+    - [Pub] add #
+       - modifiers: onlyOwner
+    - [Pub] set #
+       - modifiers: onlyOwner
+    - [Ext] setRewardTokenPerSecond #
+       - modifiers: onlyOwnerOrRewardsManager
+    - [Ext] pendingRewardToken
+    - [Ext] massUpdatePools #
+    - [Pub] updatePool #
+    - [Pub] deposit #
+    - [Pub] withdraw #
+    - [Pub] harvest #
+    - [Pub] withdrawAndHarvest #
+    - [Pub] emergencyWithdraw #
+    - [Pub] setRewardsManager #
+       - modifiers: onlyOwner
+
+ +  HaloHalo (ERC20)
+    - [Pub] <Constructor> #
+    - [Pub] enter #
+    - [Pub] leave #
+    - [Pub] getCurrentHaloHaloPrice
+
+ +  HaloToken (ERC20, ERC20Burnable, Ownable)
+    - [Pub] <Constructor> #
+       - modifiers: ERC20
+    - [Ext] setCapped #
+       - modifiers: onlyOwner
+    - [Ext] mint #
+       - modifiers: onlyOwner
+
+ +  RewardsManager (Ownable)
+    - [Pub] <Constructor> #
+    - [Ext] releaseEpochRewards #
+       - modifiers: onlyOwner
+    - [Ext] setVestingRatio #
+       - modifiers: onlyOwner
+    - [Ext] setRewardsContract #
+       - modifiers: onlyOwner
+    - [Ext] setHaloHaloContract #
+       - modifiers: onlyOwner
+    - [Ext] getVestingRatio
+    - [Ext] getRewardsContract
+    - [Ext] getHaloHaloContract
+    - [Int] transferToHaloHaloContract #
+    - [Int] convertAndTransferToRewardsContract #
+
+
+ ($) = payable function
+ # = non-constant function
+ ```
 
 ### Coverage
 
@@ -312,9 +414,217 @@ $ npm run coverage
 
 ### Tests
 
-<!-- ```text
-$ npx buidler test
-``` -->
+```text
+$ yarn run test
+yarn run v1.22.10
+warning package.json: No license field
+$ npx hardhat --network localhost test
+BASIS_POINTS =  10000
+
+  Amm Rewards
+    PoolLength
+      ✓ PoolLength should execute (187308 gas)
+    Set
+      ✓ Should emit event LogSetPool (285027 gas)
+      ✓ Should revert if invalid pool
+    Pending Reward Token
+      ✓ Pending Reward Token should equal Expected Reward Token (408378 gas)
+      ✓ When time is lastRewardTime (408378 gas)
+    MassUpdatePools
+      ✓ Should call updatePool (234554 gas)
+      ✓ Updating invalid pools should fail
+    Add
+      ✓ Should add pool with reward token multiplier (187308 gas)
+    UpdatePool
+      ✓ Should emit event LogUpdatePool (234463 gas)
+    Deposit
+      ✓ Depositing 0 amount (290613 gas)
+      ✓ Depositing into non-existent pool should fail
+    Withdraw
+      ✓ Withdraw 0 amount (255423 gas)
+    Harvest
+      ✓ Should give back the correct amount of Reward Token (509159 gas)
+      ✓ Harvest with empty user balance (246015 gas)
+    EmergencyWithdraw
+      ✓ Should emit event EmergencyWithdraw (365663 gas)
+    Admin functions
+      ✓ Non-owner should not be able to add pool
+      ✓ Owner should be able to add pool (187308 gas)
+      ✓ Non-owner should not be able to set pool allocs (187308 gas)
+      ✓ Owner should be able to set pool allocs (231511 gas)
+      ✓ Non-owner should not be able to set rewardTokenPerSecond
+      ✓ Owner should be able to set rewardTokenPerSecond (32504 gas)
+    Set rewardTokenPerSecond
+      ✓ Non-owner should not be able to set rewardTokenPerSecond
+      ✓ RewardsManager should change rewardTokenPerSecond (167779 gas)
+      ✓ Owner should be able to set rewardTokenPerSecond (32504 gas)
+
+  Halo Token
+===================Deploying Contracts=====================
+halo token deployed
+Minted initial HALO for owner account
+Minted initial HALO for addr1 account
+    Check Contract Deployment
+      ✓ HaloToken should be deployed (54478 gas)
+    I should be able to transfer HALO tokens
+      ✓ Allow transfer (89841 gas)
+    I should be able to mint HALO tokens and get the correct totalSupply
+      ✓ Only owner should mint (72741 gas)
+5e+25  HALO tokens owner balance
+      ✓ When owner mints, the total supply should be equal to all wallet balance (74756 gas)
+    I should not be allowed to mint if capped is already locked
+      ✓ Only owner can execute setCapped (64598 gas)
+      ✓ Should revert mint when capped is locked (27220 gas)
+      ✓ Should revert setCapped func if it has been executed more than once (27220 gas)
+    I should be able to burn HALO tokens and get the correct totalSupply
+      ✓ Only account holder should burn (61594 gas)
+      ✓ Only owner should burn users tokens (144521 gas)
+4e+25 HALO tokens owner balance
+      ✓ When user burns, the total supply should be equal to all wallet balance (62005 gas)
+      ✓ Burn amount should not exceed wallet balance (34374 gas)
+
+  HALOHALO Contract
+===================Deploying Contracts=====================
+halo token deployed
+40000000 HALO minted to 0x959FD7Ef9089B7142B6B908Dc3A8af7Aa8ff0FA1
+
+halohalo deployed
+==========================================================
+
+
+    Check Contract Deployments
+      ✓ HaloToken should be deployed (37402 gas)
+      ✓ Halohalo should be deployed (37402 gas)
+    Earn vesting rewards by staking HALO inside halohalo
+      ✓ Genesis is zero (37402 gas)
+      ✓ Deposit HALO tokens to halohalo contract to receive halohalo (190239 gas)
+      ✓ Calculates current value of HALOHALO in terms of HALO without vesting (105873 gas)
+      ✓ Calculates current value of HALOHALO in terms of HALO after vesting (143239 gas)
+      ✓ Claim staked HALO + bonus rewards from Halohalo and burn halohalo (73308 gas)
+Minting HALO to be entered in the halohalo contract..
+
+Minting 100 HALO to User A...
+Minting 100 HALO to User B...
+Minting 100 HALO to User C...
+100 HALO deposited by User A to halohalo
+Simulate releasing vested bonus tokens to halohalo from Rewards contract #1
+100 HALO deposited by User B to halohalo
+Simulate releasing vested bonus tokens to halohalo from Rewards contract #2
+100 HALO deposited by User C to halohalo
+Transfer to 0xB0201641d9b936eB20155a38439Ae6AB07d85Fbd approved
+All users leave halohalo
+Address 0 left
+Address 1 left
+Address 2 left
+      ✓ HALO earned by User A > HALO earned by User B > HALO earned by User C (754048 gas)
+
+  Rewards Manager
+===================Deploying Contracts=====================
+collateralERC20 deployed
+halo token deployed
+halohalo deployed
+changedHaloHaloContract deployed
+Set Rewards Manager contract.
+Deployed Rewards Manager Contract address: 0x2Cc79B6860Fd7b58f0Fb56B4f448c13C7e898EC4
+==========================================================
+
+
+    Check Contract Deployments
+      ✓ HaloToken should be deployed (46340 gas)
+      ✓ Halohalo should be deployed (46340 gas)
+      ✓ Lptoken should be deployed (46340 gas)
+      ✓ Rewards Management Contract should be deployed (46340 gas)
+    Admin functions can be set by the owner
+      ✓ can set the vestingRatio if the caller is the owner (75061 gas)
+      ✓ can not set the vestingRatio if the caller is not the owner (28636 gas)
+      ✓ can not set the vesting ratio if vesting ratio is equal to zero (28636 gas)
+      ✓ can set the rewards contract if the caller is the owner (57691 gas)
+      ✓ can not set the rewards contract if the caller is not the owner (28636 gas)
+      ✓ can not set the rewards contract if address parameter is address(0) (28636 gas)
+      ✓ can set the halohalo contract if the caller is the owner (62872 gas)
+      ✓ can not set the halohalo contract if the caller is not the owner (34236 gas)
+      ✓ can not set the halohalo contract if the address parameter is address(0) (28636 gas)
+    Released HALO will be distributed 80% to the rewards contract converted to DESRT and 20% will be vested to the halohalo contract
+      ✓ Release rewards in Epoch 0, HALOHALO priced to one at the end (347535 gas)
+      ✓ Release rewards in Epoch 1, HALOHALO priced to 1.25 at the end  (400100 gas)
+      ✓ fails if the caller is not the owner (98301 gas)
+
+·----------------------------------------------|----------------------------|-------------|----------------------------·
+|             Solc version: 0.6.12             ·  Optimizer enabled: false  ·  Runs: 200  ·  Block limit: 6718946 gas  │
+···············································|····························|·············|·····························
+|  Methods                                                                                                             │
+···················|···························|··············|·············|·············|··············|··············
+|  Contract        ·  Method                   ·  Min         ·  Max        ·  Avg        ·  # calls     ·  eur (avg)  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  add                      ·      187296  ·     187308  ·     187307  ·          19  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  deposit                  ·       73501  ·     119032  ·     103855  ·           6  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  emergencyWithdraw        ·           -  ·          -  ·      29531  ·           2  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  harvest                  ·       58707  ·      81390  ·      70049  ·           4  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  massUpdatePools          ·           -  ·          -  ·      47258  ·           2  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  set                      ·       38843  ·      58876  ·      49000  ·           5  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  setRewardsManager        ·       46328  ·      46340  ·      46338  ·          29  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  setRewardTokenPerSecond  ·           -  ·          -  ·      32504  ·           3  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  updatePool               ·       47155  ·      72234  ·      63874  ·           6  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  AmmRewards      ·  withdraw                 ·       68115  ·      91625  ·      75952  ·           3  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloHalo        ·  enter                    ·       51896  ·     105873  ·      84537  ·           6  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloHalo        ·  leave                    ·       35930  ·      56859  ·      44302  ·           5  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloToken       ·  approve                  ·       46916  ·      46964  ·      46926  ·          30  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloToken       ·  burn                     ·           -  ·          -  ·      34374  ·           4  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloToken       ·  burnFrom                 ·           -  ·          -  ·      27631  ·           2  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloToken       ·  increaseAllowance        ·           -  ·          -  ·      47237  ·           1  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloToken       ·  mint                     ·       37366  ·      71578  ·      59531  ·          44  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloToken       ·  setCapped                ·           -  ·          -  ·      27220  ·           4  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  HaloToken       ·  transfer                 ·       35279  ·      35363  ·      35335  ·           3  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  LpToken         ·  approve                  ·       29792  ·      46928  ·      43974  ·          29  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  LpToken         ·  mint                     ·           -  ·          -  ·      71335  ·          24  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  LpToken         ·  transfer                 ·           -  ·          -  ·      52417  ·          30  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  RewardsManager  ·  releaseEpochRewards      ·       98301  ·     215393  ·     199781  ·          30  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  RewardsManager  ·  setHaloHaloContract      ·       28636  ·      34236  ·      29756  ·          10  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  RewardsManager  ·  setRewardsContract       ·           -  ·          -  ·      29055  ·           1  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  RewardsManager  ·  setVestingRatio          ·           -  ·          -  ·      28721  ·           1  ·          -  │
+···················|···························|··············|·············|·············|··············|··············
+|  Deployments                                 ·                                          ·  % of limit  ·             │
+···············································|··············|·············|·············|··············|··············
+|  AmmRewards                                  ·     3165941  ·    3165953  ·    3165952  ·      47.1 %  ·          -  │
+···············································|··············|·············|·············|··············|··············
+|  CollateralERC20                             ·     1750829  ·    1750913  ·    1750871  ·      26.1 %  ·          -  │
+···············································|··············|·············|·············|··············|··············
+|  HaloHalo                                    ·     1752202  ·    1752226  ·    1752224  ·      26.1 %  ·          -  │
+···············································|··············|·············|·············|··············|··············
+|  HaloToken                                   ·           -  ·          -  ·    1910204  ·      28.4 %  ·          -  │
+···············································|··············|·············|·············|··············|··············
+|  LpToken                                     ·           -  ·          -  ·    1750829  ·      26.1 %  ·          -  │
+···············································|··············|·············|·············|··············|··············
+|  RewardsManager                              ·     1651492  ·    1651516  ·    1651512  ·      24.6 %  ·          -  │
+·----------------------------------------------|--------------|-------------|-------------|--------------|-------------·
+
+  59 passing (36s)
+```
 
 ## License
 
