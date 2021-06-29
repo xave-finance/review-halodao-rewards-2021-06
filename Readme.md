@@ -5,7 +5,7 @@
           </span>
           <br />
           <span id="project-value">
-               Project name
+               Halo Rewards
           </span>
     </div>
      <div id="details">
@@ -15,7 +15,7 @@
                </span>
                <br />
                <span class="details-value">
-                    Client name
+                    Halo DAO
                </span>
                <br />
                <span class="splash-title">
@@ -53,8 +53,11 @@
  - [Scope](#scope)
  - [Recommendations](#recommendations)
  - [Issues](#issues)
-     - [The number of minted tokens might not be the expected one](#the-number-of-minted-tokens-might-not-be-the-expected-one)
+     - [Consider checking for duplicate LP tokens when adding a new one in AmmRewards](#consider-checking-for-duplicate-lp-tokens-when-adding-a-new-one-in-ammrewards)
+     - [Capping the minting process can be simplified](#capping-the-minting-process-can-be-simplified)
+     - [haloHaloAmount should be renamed to haloAmount](#halohaloamount-should-be-renamed-to-haloamount)
      - [Can set immutable for halo in HaloHalo](#can-set-immutable-for-halo-in-halohalo)
+     - [The number of minted tokens might not be the expected one](#the-number-of-minted-tokens-might-not-be-the-expected-one)
  - [Artifacts](#artifacts)
      - [Surya](#surya)
      - [Coverage](#coverage)
@@ -64,11 +67,11 @@
 
 ## Details
 
-- **Client** Client name
+- **Client** Halo DAO
 - **Date** June 2021
 - **Lead reviewer** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn))
 - **Reviewers** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn)), Andrei Simion ([@andreiashu](https://twitter.com/andreiashu))
-- **Repository**: [Project name](https://github.com/HaloDAO/halo-rewards.git)
+- **Repository**: [Halo Rewards](https://github.com/HaloDAO/halo-rewards.git)
 - **Commit hash** `1cff704a4065256f30bb50858626aa7ef5552268`
 - **Technologies**
   - Solidity
@@ -78,16 +81,16 @@
 
 | SEVERITY       |    OPEN    |    CLOSED    |
 |----------------|:----------:|:------------:|
-|  Informational  |  0  |  0  |
-|  Minor  |  1  |  0  |
-|  Medium  |  0  |  0  |
-|  Major  |  1  |  0  |
+|  Informational  |  1  |  0  |
+|  Minor  |  3  |  0  |
+|  Medium  |  1  |  0  |
+|  Major  |  0  |  0  |
 
 ## Executive summary
 
-This report represents the results of the engagement with **Client name** to review **Project name**.
+This report represents the results of the engagement with **Halo DAO** to review **Halo Rewards**.
 
-The review was conducted over the course of **2 weeks** from **October 15 to November 15, 2020**. A total of **5 person-days** were spent reviewing the code.
+The review was conducted over the course of **1 week** from **October 15 to November 15, 2020**. A total of **5 person-days** were spent reviewing the code.
 
 ### Week 1
 
@@ -95,7 +98,7 @@ During the first week, we ...
 
 ## Scope
 
-The initial review focused on the [Project name](https://github.com/HaloDAO/halo-rewards.git) repository, identified by the commit hash `1cff704a4065256f30bb50858626aa7ef5552268`. ...
+The initial review focused on the [Halo Rewards](https://github.com/HaloDAO/halo-rewards.git) repository, identified by the commit hash `1cff704a4065256f30bb50858626aa7ef5552268`. ...
 
 <!-- We focused on manually reviewing the codebase, searching for security issues such as, but not limited to, re-entrancy problems, transaction ordering, block timestamp dependency, exception handling, call stack depth limitation, integer overflow/underflow, self-destructible contracts, unsecured balance, use of origin, costly gas patterns, architectural problems, code readability. -->
 
@@ -118,8 +121,216 @@ A good rule of thumb is to have 100% test coverage. This does not guarantee the 
 ## Issues
 
 
+### [Consider checking for duplicate LP tokens when adding a new one in `AmmRewards`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/5)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Medium](https://img.shields.io/static/v1?label=Severity&message=Medium&color=FF9500&style=flat-square)
+
+**Description**
+
+An owner can add a new LP token to the list by calling `add`.
+
+
+[code/contracts/AmmRewards.sol#L85](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L85)
+```solidity
+    function add(uint256 allocPoint, IERC20 _lpToken, IRewarder _rewarder) public onlyOwner {
+```
+
+There's a comment stating that rewards will suffer if the same LP token is added multiple times in the list.
+
+
+[code/contracts/AmmRewards.sol#L81](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L81)
+```solidity
+    /// DO NOT add the same LP token more than once. Rewards will be messed up if you do.
+```
+
+Consider checking for duplicate tokens when adding a new one to make sure the system does not behave incorrectly.
+
+**Recommendation**
+
+If the number of tokens will not be over 10, consider looping over the existing tokens, making sure the new token does not match one of the existing ones.
+
+```solidity
+contract CheckWithLoop {
+    uint[] list;
+
+    function addLoop(uint n) public {
+        uint listLength = list.length;
+        for (uint i; i < listLength; i++) {
+            require(list[i] != n, "no duplicates");
+        }
+        list.push(n);
+    }
+}
+```
+
+If you expect to have more than 10 tokens on the list, a mapping can be used to check the existence of a token.
+
+```solidity
+contract CheckWithMapping {
+    uint[] list;
+    mapping(uint => bool) listDups;
+    
+    function addNonDuplicate(uint n) public {
+        require(listDups[n] == false, "no duplicates");
+        list.push(n);
+        listDups[n] = true;
+    }
+}
+```
+
+
+
+---
+
+
+### [Capping the minting process can be simplified](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/4)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+
+**Description**
+
+When the HaloToken is deployed, there are 2 state variables set:
+
+
+[code/contracts/HaloToken.sol#L24-L25](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/HaloToken.sol#L24-L25)
+```solidity
+        canMint = true;
+        isCappedFuncLocked = false;
+```
+
+The `canMint` state variable is checked when the owner tries to mint additional tokens.
+
+
+[code/contracts/HaloToken.sol#L40-L41](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/HaloToken.sol#L40-L41)
+```solidity
+    function mint(address account, uint256 amount) external onlyOwner {
+        require(canMint == true, "Total supply is now capped, cannot mint more");
+```
+
+The owner can renounce this power by calling `setCapped`.
+
+
+[code/contracts/HaloToken.sol#L28-L30](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/HaloToken.sol#L28-L30)
+```solidity
+    /// @notice Locks the cap and disables mint func.
+    /// @dev Should be called only once. Allows owner to lock the cap and disable mint function.
+    function setCapped() external onlyOwner {
+```
+
+When `setCapped` is called, the state variable `isCappedFuncLocked` is checked to be false.
+
+
+[code/contracts/HaloToken.sol#L31](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/HaloToken.sol#L31)
+```solidity
+        require(isCappedFuncLocked == false, "Cannot execute setCapped more than once.");
+```
+
+Once the check passes, `canMint` is set to `false`, blocking future token minting.
+
+
+[code/contracts/HaloToken.sol#L32](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/HaloToken.sol#L32)
+```solidity
+        canMint = false;
+```
+
+And `isCappedFuncLocked` is set to `true`; this prevents a second call to `setCapped`.
+
+However, the 2 state variables are always synchronized. They can have the value `true` or `false`. And they only exist in these 2 states:
+
+1. Can mint tokens; can disable token minting
+```
+canMint = true
+isCappedFuncLocked = false
+```
+
+2. Cannot mint tokens anymore; cannot re-enable token minting
+```
+canMint = false
+isCappedFuncLocked = true
+```
+
+The code can be simplified if one of the 2 state variables is removed, the other one's value can be deduced by negating the remaining one.
+
+**Recommendation**
+
+Remove `isCappedFuncLocked` and use `canMint` to limit the `setCapped` execution.
+
+
+---
+
+
+### [`haloHaloAmount` should be renamed to `haloAmount`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/3)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+
+**Description**
+
+When a user wants to unstake their tokens, they need to call `leave`.
+
+
+[code/contracts/HaloHalo.sol#L44-L46](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L44-L46)
+```solidity
+  // Claim HALOs from HALOHALOs.
+  // Unlocks the staked + gained Halo and burns HALOHALO
+  function leave(uint256 _share) public {
+```
+
+The amount of tokens to be unlocked is calculated and saved in a local variable `haloHaloAmount`:
+
+
+[code/contracts/HaloHalo.sol#L49-L51](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L49-L51)
+```solidity
+    // Calculates the amount of Halo the HALOHALO is worth
+    uint256 haloHaloAmount =
+      _share.mul(halo.balanceOf(address(this))).div(totalShares);
+```
+
+This value should be named `haloAmount` because this value is then used to send the halo tokens back to the user.
+
+
+[code/contracts/HaloHalo.sol#L53](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L53)
+```solidity
+    halo.transfer(msg.sender, haloHaloAmount);
+```
+
+**Recommendation**
+
+Rename the variable `haloHaloAmount` to `haloAmount`.
+
+
+---
+
+
+### [Can set immutable for `halo` in `HaloHalo`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/1)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+
+**Description**
+
+The Halo token contract is set when the `HaloHalo` contract is deployed.
+
+
+[code/contracts/HaloHalo.sol#L16](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L16)
+```solidity
+    halo = _halo;
+```
+
+The `halo` variable is defined as a state variable.
+
+
+[code/contracts/HaloHalo.sol#L10](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L10)
+```solidity
+  IERC20 public halo;
+```
+
+Because this state variable is never changed, it can be defined as `immutable` for a significant gas cost.
+
+**Recommendation**
+
+Set `halo` as `immutable`.
+
+
+---
+
+
 ### [The number of minted tokens might not be the expected one](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/2)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Major](https://img.shields.io/static/v1?label=Severity&message=Major&color=ff3b30&style=flat-square)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Informational](https://img.shields.io/static/v1?label=Severity&message=Informational&color=34C759&style=flat-square)
 
 **Description**
 
@@ -201,41 +412,12 @@ Minted tokens = $\frac{100 * 200}{300} = 66.66$
 
 This allows a malicious actor to manipulate the ratio of minted tokens.
 
-**Recommendation**
-
-Use internal accounting to retrieve the number of locked tokens.
+It's important to note that the "unstake" mechanism is not affected in any detrimental way because the current ratio is used to return the tokens back to the users.
 
 
 
----
 
 
-### [Can set immutable for `halo` in `HaloHalo`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/1)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
-
-**Description**
-
-The Halo token contract is set when the `HaloHalo` contract is deployed.
-
-
-[code/contracts/HaloHalo.sol#L16](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L16)
-```solidity
-    halo = _halo;
-```
-
-The `halo` variable is defined as a state variable.
-
-
-[code/contracts/HaloHalo.sol#L10](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/625eb4d3d0f780cfe06bb3f44ccbbea37149bd8b/code/contracts/HaloHalo.sol#L10)
-```solidity
-  IERC20 public halo;
-```
-
-Because this state variable is never changed, it can be defined as `immutable` for a significant gas cost.
-
-**Recommendation**
-
-Set `halo` as `immutable`.
 
 
 ---

@@ -1,8 +1,9 @@
  +  AmmRewards (ReentrancyGuard, Ownable)
-    - [ ][Pub] <Constructor> #
-    - [ ][Pub] poolLength
+    - [x][Pub] <Constructor> #
+    - [x][Pub] poolLength
     - [ ][Pub] add #
        - modifiers: onlyOwner
+       - [ ] D: Not sure if they should globally update something when they add a new LP (related to totalAllocPoint).
     - [ ][Pub] set #
        - modifiers: onlyOwner
     - [ ][Ext] setRewardTokenPerSecond #
@@ -19,19 +20,19 @@
        - modifiers: onlyOwner
 
  +  HaloHalo (ERC20)
-    - [ ][Pub] <Constructor> #
-    - [ ][Pub] enter #
-      - D: a user can manipulate how much `halo` token exists in the contract. what next?
-      - D: the comments says the ratio will change overtime as halo is burned/minted, but doesn't seem so.
-    - [ ][Pub] leave #
-    - [ ][Pub] getCurrentHaloHaloPrice
+    - [x][Pub] <Constructor> #
+    - [x][Pub] enter #
+      - [x] D: a user can manipulate how much `halo` token exists in the contract. what next?
+      - [x] D: the comment says the ratio will change overtime as halo is burned/minted, but doesn't seem so.
+    - [x][Pub] leave #
+    - [x][Pub] getCurrentHaloHaloPrice
 
  +  HaloToken (ERC20, ERC20Burnable, Ownable)
-    - [ ][Pub] <Constructor> #
+    - [x][Pub] <Constructor> #
        - modifiers: ERC20
-    - [ ][Ext] setCapped #
+    - [x][Ext] setCapped #
        - modifiers: onlyOwner
-    - [ ][Ext] mint #
+    - [x][Ext] mint #
        - modifiers: onlyOwner
 
  +  RewardsManager (Ownable)
