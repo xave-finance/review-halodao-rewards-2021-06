@@ -54,6 +54,7 @@
  - [Recommendations](#recommendations)
  - [Issues](#issues)
      - [Consider checking for duplicate LP tokens when adding a new one in AmmRewards](#consider-checking-for-duplicate-lp-tokens-when-adding-a-new-one-in-ammrewards)
+     - [Simplify storage of haloHaloContract in RewardsManager](#simplify-storage-of-halohalocontract-in-rewardsmanager)
      - [Capping the minting process can be simplified](#capping-the-minting-process-can-be-simplified)
      - [haloHaloAmount should be renamed to haloAmount](#halohaloamount-should-be-renamed-to-haloamount)
      - [Can set immutable for halo in HaloHalo](#can-set-immutable-for-halo-in-halohalo)
@@ -82,7 +83,7 @@
 | SEVERITY | OPEN  | CLOSED |
 | -------- | :---: | :----: |
 |  Informational  |  1  |  0  |
-|  Minor  |  3  |  0  |
+|  Minor  |  4  |  0  |
 |  Medium  |  1  |  0  |
 |  Major  |  0  |  0  |
 
@@ -177,6 +178,121 @@ contract CheckWithMapping {
 }
 ```
 
+
+
+---
+
+
+### [Simplify storage of `haloHaloContract` in `RewardsManager`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/6)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+
+**Description**
+
+During the `RewardsManager` deploy a few storage variables are set.
+
+
+[code/contracts/RewardsManager.sol#L26-L37](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/90dd3734a922bb9dcb80fffba34fe9db3065c4d0/code/contracts/RewardsManager.sol#L26-L37)
+```solidity
+  constructor(
+    uint256 _initialVestingRatio, //in BASIS_POINTS, multiplied by 10^4
+    address _rewardsContract,
+    address _haloHaloContract,
+    IERC20 _halo
+  ) public {
+    vestingRatio = _initialVestingRatio;
+    rewardsContract = _rewardsContract;
+    haloHaloContract = _haloHaloContract;
+    halohalo = HaloHalo(haloHaloContract);
+    halo = _halo;
+  }
+```
+
+The variable storing the address for the HaloHalo contract is received as `_haloHaloContract` in the arguments.
+
+
+[code/contracts/RewardsManager.sol#L29](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/90dd3734a922bb9dcb80fffba34fe9db3065c4d0/code/contracts/RewardsManager.sol#L29)
+```solidity
+    address _haloHaloContract,
+```
+
+The contract's address is stored in `haloHaloContract` 
+
+
+[code/contracts/RewardsManager.sol#L34](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/90dd3734a922bb9dcb80fffba34fe9db3065c4d0/code/contracts/RewardsManager.sol#L34)
+```solidity
+    haloHaloContract = _haloHaloContract;
+```
+
+And it is also stored in a separate variable as the `HaloHalo` interface
+
+
+[code/contracts/RewardsManager.sol#L35](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/90dd3734a922bb9dcb80fffba34fe9db3065c4d0/code/contracts/RewardsManager.sol#L35)
+```solidity
+    halohalo = HaloHalo(haloHaloContract);
+```
+
+However, both of the values are identical in the contract's storage.
+
+Consider this simplified example
+
+```solidity
+interface SomeContract {
+    function doSomething() external;
+}
+
+contract Save {
+    SomeContract someContract;
+    address someContractAddress;
+    
+    constructor(address _someContractAddress) {
+        someContract = SomeContract(_someContractAddress);
+        someContractAddress = _someContractAddress;
+    }
+}
+```
+
+The contract `Save` receives an argument on deploy and proceeds to save the address both as an address (as `someContractAddress`), but also as a `SomeContract` interface (as `someContract`).
+
+We deployed this contract locally (on a [Ganache](https://www.trufflesuite.com/ganache) instance) and checked the both of the storage slots in the contract after a successful deploy.
+
+We connected to the local instance with [Hitomi](https://github.com/cleanunicorn/hitomi) and we're dropped in a web3 enabled local console.
+
+```text
+$ hitomi http://localhost:8545
+Starting Hitomi v0.3.2.
+
+Connected to http://localhost:8545.
+
+Node version: EthereumJS TestRPC/v2.13.2/ethereum-js
+Enode path: None
+Protocol version: 99
+Chain ID: 1337
+Block number: 0
+Mining: False (0 hash rate)
+Syncing: False
+```
+
+We proceeded to check the first storage slot representing `SomeContract someContract;`
+
+```text
+>>> web3.eth.getStorageAt("0x6F3dC8C964d3F2ce4A1Ba8CD6Da6E7320A69CC6D", 0)
+HexBytes('0x5b38da6a701c568545dcfcb03fcb875f56beddc4')
+```
+
+And the second storage slot representing `address someContractAddress;`
+
+```text
+>>> web3.eth.getStorageAt("0x6F3dC8C964d3F2ce4A1Ba8CD6Da6E7320A69CC6D", 1)
+HexBytes('0x5b38da6a701c568545dcfcb03fcb875f56beddc4')
+```
+
+We can see both values are identical. Solidity needs to cast an address as an interface to know which methods are available and how to use them. The generated assembly doesn't do anything specific to the initially provided address, this is just syntactic sugar.
+
+Because both values are identical, we don't need to save both of them in separate storage slots, this makes the save (or update) and the read more expensive. Saving only one of them is better because, on read, it doesn't need to retrieve both of them and storage handing (reading and writing) is very expensive.
+
+**Recommendation**
+
+Use only one of the storage slots to save either the HaloHalo contract and cast when needed to either access the address or the interface.
 
 
 ---

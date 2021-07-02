@@ -1,4 +1,5 @@
  +  AmmRewards (ReentrancyGuard, Ownable)
+    - D: Fork of [MasterChef.sol](https://github.com/sushiswap/sushiswap/blob/master/contracts/MasterChef.sol)
     - [x][Pub] <Constructor> #
     - [x][Pub] poolLength
     - [ ][Pub] add #
@@ -9,6 +10,7 @@
     - [ ][Ext] setRewardTokenPerSecond #
        - modifiers: onlyOwnerOrRewardsManager
     - [ ][Ext] pendingRewardToken
+      - [ ] D: What happens when a pool is updated? Do you need to run a mass update pool?
     - [ ][Ext] massUpdatePools #
     - [ ][Pub] updatePool #
     - [ ][Pub] deposit #
@@ -36,17 +38,17 @@
        - modifiers: onlyOwner
 
  +  RewardsManager (Ownable)
-    - [ ][Pub] <Constructor> #
-    - [ ][Ext] releaseEpochRewards #
+    - [x][Pub] <Constructor> #
+    - [x][Ext] releaseEpochRewards #
        - modifiers: onlyOwner
-    - [ ][Ext] setVestingRatio #
+    - [x][Ext] setVestingRatio #
        - modifiers: onlyOwner
-    - [ ][Ext] setRewardsContract #
+    - [x][Ext] setRewardsContract #
        - modifiers: onlyOwner
-    - [ ][Ext] setHaloHaloContract #
+    - [x][Ext] setHaloHaloContract #
        - modifiers: onlyOwner
-    - [ ][Ext] getVestingRatio
-    - [ ][Ext] getRewardsContract
-    - [ ][Ext] getHaloHaloContract
-    - [ ][Int] transferToHaloHaloContract #
-    - [ ][Int] convertAndTransferToRewardsContract #
+    - [x][Ext] getVestingRatio
+    - [x][Ext] getRewardsContract
+    - [x][Ext] getHaloHaloContract
+    - [x][Int] transferToHaloHaloContract #
+    - [x][Int] convertAndTransferToRewardsContract #
