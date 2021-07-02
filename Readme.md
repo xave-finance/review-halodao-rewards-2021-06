@@ -51,14 +51,13 @@
  - [Executive summary](#executive-summary)
      - [Week 1](#week-1)
  - [Scope](#scope)
- - [Recommendations](#recommendations)
  - [Issues](#issues)
+     - [Consider checking for duplicate LP tokens when adding a new one in AmmRewards](#consider-checking-for-duplicate-lp-tokens-when-adding-a-new-one-in-ammrewards)
      - [Simplify storage of haloHaloContract in RewardsManager](#simplify-storage-of-halohalocontract-in-rewardsmanager)
      - [Capping the minting process can be simplified](#capping-the-minting-process-can-be-simplified)
      - [haloHaloAmount should be renamed to haloAmount](#halohaloamount-should-be-renamed-to-haloamount)
      - [Can set immutable for halo in HaloHalo](#can-set-immutable-for-halo-in-halohalo)
      - [The number of minted tokens might not be the expected one](#the-number-of-minted-tokens-might-not-be-the-expected-one)
-     - [Consider checking for duplicate LP tokens when adding a new one in AmmRewards](#consider-checking-for-duplicate-lp-tokens-when-adding-a-new-one-in-ammrewards)
  - [Artifacts](#artifacts)
      - [Surya](#surya)
      - [Coverage](#coverage)
@@ -74,7 +73,7 @@
 - **Reviewers** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn)), Andrei Simion ([@andreiashu](https://twitter.com/andreiashu))
 - **Repository**: [Halo Rewards](https://github.com/HaloDAO/halo-rewards.git)
 - **Initial commit hash** `1cff704a4065256f30bb50858626aa7ef5552268`
-- **Final commit hash** ``
+- **Final commit hash** `04f83da3ebe42a1df6692e1e3080fab9ed051920`
 - **Technologies**
   - Solidity
   - Node.JS
@@ -85,14 +84,14 @@
 | -------- | :---: | :----: |
 |  Informational  |  0  |  1  |
 |  Minor  |  0  |  4  |
-|  Medium  |  1  |  0  |
+|  Medium  |  0  |  1  |
 |  Major  |  0  |  0  |
 
 ## Executive summary
 
 This report represents the results of the engagement with **Halo DAO** to review **Halo Rewards**.
 
-The review was conducted over the course of **1 week** from **October 15 to November 15, 2020**. A total of **5 person-days** were spent reviewing the code.
+The review was conducted over the course of **1 week** from **June 28 to July 2, 2021**. A total of **10 person-days** were spent reviewing the code.
 
 ### Week 1
 
@@ -104,7 +103,7 @@ Because there were no major issues, we gave access to the development team to th
 
 Towards the end of the week, we set up a meeting to present the current state of the report. 
 
-We also received a new commit hash `` that included fixes for the presented issues and included that in the report.
+We also received a new commit hash `04f83da3ebe42a1df6692e1e3080fab9ed051920` that included fixes for the presented issues and included that in the report.
 
 ## Scope
 
@@ -118,9 +117,9 @@ We focused on manually reviewing the codebase, searching for security issues suc
 - AmmRewards.sol
 - RewardsManager.sol
 
-## Recommendations
+<!-- ## Recommendations
 
-We identified a few possible general improvements that are not security issues during the review, which will bring value to the developers and the community reviewing and using the product.
+We identified a few possible general improvements that are not security issues during the review, which will bring value to the developers and the community reviewing and using the product. -->
 
 <!-- ### Increase the number of tests
 
@@ -129,6 +128,67 @@ A good rule of thumb is to have 100% test coverage. This does not guarantee the 
 -->
 
 ## Issues
+
+
+### [Consider checking for duplicate LP tokens when adding a new one in `AmmRewards`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/5)
+![Issue status: Fixed](https://img.shields.io/static/v1?label=Status&message=Fixed&color=5AC8FA&style=flat-square) ![Medium](https://img.shields.io/static/v1?label=Severity&message=Medium&color=FF9500&style=flat-square)
+
+**Description**
+
+An owner can add a new LP token to the list by calling `add`.
+
+
+[code/contracts/AmmRewards.sol#L85](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L85)
+```solidity
+    function add(uint256 allocPoint, IERC20 _lpToken, IRewarder _rewarder) public onlyOwner {
+```
+
+There's a comment stating that rewards will suffer if the same LP token is added multiple times in the list.
+
+
+[code/contracts/AmmRewards.sol#L81](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L81)
+```solidity
+    /// DO NOT add the same LP token more than once. Rewards will be messed up if you do.
+```
+
+Consider checking for duplicate tokens when adding a new one to make sure the system does not behave incorrectly.
+
+**Recommendation**
+
+If the number of tokens will not be over 10, consider looping over the existing tokens, making sure the new token does not match one of the existing ones.
+
+```solidity
+contract CheckWithLoop {
+    uint[] list;
+
+    function addLoop(uint n) public {
+        uint listLength = list.length;
+        for (uint i; i < listLength; i++) {
+            require(list[i] != n, "no duplicates");
+        }
+        list.push(n);
+    }
+}
+```
+
+If you expect to have more than 10 tokens on the list, a mapping can be used to check the existence of a token.
+
+```solidity
+contract CheckWithMapping {
+    uint[] list;
+    mapping(uint => bool) listDups;
+    
+    function addNonDuplicate(uint n) public {
+        require(listDups[n] == false, "no duplicates");
+        list.push(n);
+        listDups[n] = true;
+    }
+}
+```
+
+
+
+---
 
 
 ### [Simplify storage of `haloHaloContract` in `RewardsManager`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/6)
@@ -470,78 +530,17 @@ $h_{locked} = 300$
 
 The number of $h_{locked}$ is equal to 300 because the actual balance of the token is retrieved by using the `balanceOf` method, not an internal accounting method.
 
-If a 3rd user wants to lock 100 HALO tokens, a different ratio of HALOHALO tokens will be minted for them. Using the formula we obtain the number of minted tokens.
+If a 3rd user wants to lock 100 HALO tokens, a different ratio of HALOHALO tokens will be minted for them. Using the formula, we obtain the number of minted tokens.
 
 Minted tokens = $\frac{100 * 200}{300} = 66.66$
 
 This allows a malicious actor to manipulate the ratio of minted tokens.
 
-It's important to note that the "unstake" mechanism is not affected in any detrimental way because the current ratio is used to return the tokens back to the users.
+It's important to note that the "unstake" mechanism is not affected negatively because the current ratio is used to return the tokens back to the users. Also, the actor who sends the tokens doesn't seem to gain anything from sending the tokens; in fact, they lose the tokens they sent to the contract, and the users being part of the system (who used `enter`) gain the lost tokens.
 
 
 
 
-
-
-
----
-
-
-### [Consider checking for duplicate LP tokens when adding a new one in `AmmRewards`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/5)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Medium](https://img.shields.io/static/v1?label=Severity&message=Medium&color=FF9500&style=flat-square)
-
-**Description**
-
-An owner can add a new LP token to the list by calling `add`.
-
-
-[code/contracts/AmmRewards.sol#L85](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L85)
-```solidity
-    function add(uint256 allocPoint, IERC20 _lpToken, IRewarder _rewarder) public onlyOwner {
-```
-
-There's a comment stating that rewards will suffer if the same LP token is added multiple times in the list.
-
-
-[code/contracts/AmmRewards.sol#L81](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L81)
-```solidity
-    /// DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-```
-
-Consider checking for duplicate tokens when adding a new one to make sure the system does not behave incorrectly.
-
-**Recommendation**
-
-If the number of tokens will not be over 10, consider looping over the existing tokens, making sure the new token does not match one of the existing ones.
-
-```solidity
-contract CheckWithLoop {
-    uint[] list;
-
-    function addLoop(uint n) public {
-        uint listLength = list.length;
-        for (uint i; i < listLength; i++) {
-            require(list[i] != n, "no duplicates");
-        }
-        list.push(n);
-    }
-}
-```
-
-If you expect to have more than 10 tokens on the list, a mapping can be used to check the existence of a token.
-
-```solidity
-contract CheckWithMapping {
-    uint[] list;
-    mapping(uint => bool) listDups;
-    
-    function addNonDuplicate(uint n) public {
-        require(listDups[n] == false, "no duplicates");
-        list.push(n);
-        listDups[n] = true;
-    }
-}
-```
 
 
 
