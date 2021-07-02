@@ -53,12 +53,12 @@
  - [Scope](#scope)
  - [Recommendations](#recommendations)
  - [Issues](#issues)
-     - [Consider checking for duplicate LP tokens when adding a new one in AmmRewards](#consider-checking-for-duplicate-lp-tokens-when-adding-a-new-one-in-ammrewards)
      - [Simplify storage of haloHaloContract in RewardsManager](#simplify-storage-of-halohalocontract-in-rewardsmanager)
      - [Capping the minting process can be simplified](#capping-the-minting-process-can-be-simplified)
      - [haloHaloAmount should be renamed to haloAmount](#halohaloamount-should-be-renamed-to-haloamount)
      - [Can set immutable for halo in HaloHalo](#can-set-immutable-for-halo-in-halohalo)
      - [The number of minted tokens might not be the expected one](#the-number-of-minted-tokens-might-not-be-the-expected-one)
+     - [Consider checking for duplicate LP tokens when adding a new one in AmmRewards](#consider-checking-for-duplicate-lp-tokens-when-adding-a-new-one-in-ammrewards)
  - [Artifacts](#artifacts)
      - [Surya](#surya)
      - [Coverage](#coverage)
@@ -73,7 +73,8 @@
 - **Lead reviewer** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn))
 - **Reviewers** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn)), Andrei Simion ([@andreiashu](https://twitter.com/andreiashu))
 - **Repository**: [Halo Rewards](https://github.com/HaloDAO/halo-rewards.git)
-- **Commit hash** `1cff704a4065256f30bb50858626aa7ef5552268`
+- **Initial commit hash** `1cff704a4065256f30bb50858626aa7ef5552268`
+- **Final commit hash** ``
 - **Technologies**
   - Solidity
   - Node.JS
@@ -82,8 +83,8 @@
 
 | SEVERITY | OPEN  | CLOSED |
 | -------- | :---: | :----: |
-|  Informational  |  1  |  0  |
-|  Minor  |  4  |  0  |
+|  Informational  |  0  |  1  |
+|  Minor  |  0  |  4  |
 |  Medium  |  1  |  0  |
 |  Major  |  0  |  0  |
 
@@ -95,13 +96,21 @@ The review was conducted over the course of **1 week** from **October 15 to Nove
 
 ### Week 1
 
-During the first week, we ...
+Before the beginning of the first week, we set up a kickoff meeting on Friday to ensure we have all the details to start the audit. This meeting was recorded and shared with all the parties involved in this review.
+
+We started the following week by creating a code snapshot at commit hash `1cff704a4065256f30bb50858626aa7ef5552268`. We started using our arsenal of tools to make the graphs and descriptions of the contracts in scope. We proceeded to review the rest of the code manually.
+
+Because there were no major issues, we gave access to the development team to the minor issues we found. This gave them the time and opportunity to provide fixes for them during the current week. We continued to review the code, but we found no major issues.
+
+Towards the end of the week, we set up a meeting to present the current state of the report. 
+
+We also received a new commit hash `` that included fixes for the presented issues and included that in the report.
 
 ## Scope
 
-The initial review focused on the [Halo Rewards](https://github.com/HaloDAO/halo-rewards.git) repository, identified by the commit hash `1cff704a4065256f30bb50858626aa7ef5552268`. ...
+The initial review focused on the [Halo Rewards](https://github.com/HaloDAO/halo-rewards.git) repository, identified by the commit hash `1cff704a4065256f30bb50858626aa7ef5552268`.
 
-<!-- We focused on manually reviewing the codebase, searching for security issues such as, but not limited to, re-entrancy problems, transaction ordering, block timestamp dependency, exception handling, call stack depth limitation, integer overflow/underflow, self-destructible contracts, unsecured balance, use of origin, costly gas patterns, architectural problems, code readability. -->
+We focused on manually reviewing the codebase, searching for security issues such as, but not limited to, re-entrancy problems, transaction ordering, block timestamp dependency, exception handling, call stack depth limitation, integer overflow/underflow, self-destructible contracts, unsecured balance, use of origin, costly gas patterns, architectural problems, code readability.
 
 **Includes:**
 - HaloHalo.sol
@@ -122,69 +131,8 @@ A good rule of thumb is to have 100% test coverage. This does not guarantee the 
 ## Issues
 
 
-### [Consider checking for duplicate LP tokens when adding a new one in `AmmRewards`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/5)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Medium](https://img.shields.io/static/v1?label=Severity&message=Medium&color=FF9500&style=flat-square)
-
-**Description**
-
-An owner can add a new LP token to the list by calling `add`.
-
-
-[code/contracts/AmmRewards.sol#L85](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L85)
-```solidity
-    function add(uint256 allocPoint, IERC20 _lpToken, IRewarder _rewarder) public onlyOwner {
-```
-
-There's a comment stating that rewards will suffer if the same LP token is added multiple times in the list.
-
-
-[code/contracts/AmmRewards.sol#L81](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L81)
-```solidity
-    /// DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-```
-
-Consider checking for duplicate tokens when adding a new one to make sure the system does not behave incorrectly.
-
-**Recommendation**
-
-If the number of tokens will not be over 10, consider looping over the existing tokens, making sure the new token does not match one of the existing ones.
-
-```solidity
-contract CheckWithLoop {
-    uint[] list;
-
-    function addLoop(uint n) public {
-        uint listLength = list.length;
-        for (uint i; i < listLength; i++) {
-            require(list[i] != n, "no duplicates");
-        }
-        list.push(n);
-    }
-}
-```
-
-If you expect to have more than 10 tokens on the list, a mapping can be used to check the existence of a token.
-
-```solidity
-contract CheckWithMapping {
-    uint[] list;
-    mapping(uint => bool) listDups;
-    
-    function addNonDuplicate(uint n) public {
-        require(listDups[n] == false, "no duplicates");
-        list.push(n);
-        listDups[n] = true;
-    }
-}
-```
-
-
-
----
-
-
 ### [Simplify storage of `haloHaloContract` in `RewardsManager`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/6)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+![Issue status: Fixed](https://img.shields.io/static/v1?label=Status&message=Fixed&color=5AC8FA&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
 
 **Description**
 
@@ -299,7 +247,7 @@ Use only one of the storage slots to save either the HaloHalo contract and cast 
 
 
 ### [Capping the minting process can be simplified](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/4)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+![Issue status: Fixed](https://img.shields.io/static/v1?label=Status&message=Fixed&color=5AC8FA&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
 
 **Description**
 
@@ -374,7 +322,7 @@ Remove `isCappedFuncLocked` and use `canMint` to limit the `setCapped` execution
 
 
 ### [`haloHaloAmount` should be renamed to `haloAmount`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/3)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+![Issue status: Fixed](https://img.shields.io/static/v1?label=Status&message=Fixed&color=5AC8FA&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
 
 **Description**
 
@@ -415,7 +363,7 @@ Rename the variable `haloHaloAmount` to `haloAmount`.
 
 
 ### [Can set immutable for `halo` in `HaloHalo`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/1)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
+![Issue status: Fixed](https://img.shields.io/static/v1?label=Status&message=Fixed&color=5AC8FA&style=flat-square) ![Minor](https://img.shields.io/static/v1?label=Severity&message=Minor&color=FFCC00&style=flat-square)
 
 **Description**
 
@@ -446,7 +394,7 @@ Set `halo` as `immutable`.
 
 
 ### [The number of minted tokens might not be the expected one](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/2)
-![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Informational](https://img.shields.io/static/v1?label=Severity&message=Informational&color=34C759&style=flat-square)
+![Issue status: Acknowledged](https://img.shields.io/static/v1?label=Status&message=Acknowledged&color=007AFF&style=flat-square) ![Informational](https://img.shields.io/static/v1?label=Severity&message=Informational&color=34C759&style=flat-square)
 
 **Description**
 
@@ -533,6 +481,67 @@ It's important to note that the "unstake" mechanism is not affected in any detri
 
 
 
+
+
+
+---
+
+
+### [Consider checking for duplicate LP tokens when adding a new one in `AmmRewards`](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/issues/5)
+![Issue status: Open](https://img.shields.io/static/v1?label=Status&message=Open&color=5856D6&style=flat-square) ![Medium](https://img.shields.io/static/v1?label=Severity&message=Medium&color=FF9500&style=flat-square)
+
+**Description**
+
+An owner can add a new LP token to the list by calling `add`.
+
+
+[code/contracts/AmmRewards.sol#L85](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L85)
+```solidity
+    function add(uint256 allocPoint, IERC20 _lpToken, IRewarder _rewarder) public onlyOwner {
+```
+
+There's a comment stating that rewards will suffer if the same LP token is added multiple times in the list.
+
+
+[code/contracts/AmmRewards.sol#L81](https://github.com/monoceros-alpha/review-halodao-rewards-2021-06/blob/4757f51facd18a0fa205ffd9961df8c6b0409deb/code/contracts/AmmRewards.sol#L81)
+```solidity
+    /// DO NOT add the same LP token more than once. Rewards will be messed up if you do.
+```
+
+Consider checking for duplicate tokens when adding a new one to make sure the system does not behave incorrectly.
+
+**Recommendation**
+
+If the number of tokens will not be over 10, consider looping over the existing tokens, making sure the new token does not match one of the existing ones.
+
+```solidity
+contract CheckWithLoop {
+    uint[] list;
+
+    function addLoop(uint n) public {
+        uint listLength = list.length;
+        for (uint i; i < listLength; i++) {
+            require(list[i] != n, "no duplicates");
+        }
+        list.push(n);
+    }
+}
+```
+
+If you expect to have more than 10 tokens on the list, a mapping can be used to check the existence of a token.
+
+```solidity
+contract CheckWithMapping {
+    uint[] list;
+    mapping(uint => bool) listDups;
+    
+    function addNonDuplicate(uint n) public {
+        require(listDups[n] == false, "no duplicates");
+        list.push(n);
+        listDups[n] = true;
+    }
+}
+```
 
 
 
@@ -916,9 +925,7 @@ Deployed Rewards Manager Contract address: 0x2Cc79B6860Fd7b58f0Fb56B4f448c13C7e8
 ···············································|··············|·············|·············|··············|··············
 |  HaloToken                                   ·           -  ·          -  ·    1910204  ·      28.4 %  ·          -  │
 ···············································|··············|·············|·············|··············|··············
-|  LpToken                                     ·           -  ·          -  ·    1750829  ·      26.1 %  ·          -  │     NO❗️            |
-|         └          |                 add                 |           Public ❗️            |       🛑        |         onlyOwner         |
-|         └          |                 set                 |           Public ❗️            |       🛑        |         
+|  LpToken                                     ·           -  ·          -  ·    1750829  ·      26.1 %  ·          -  │
 ···············································|··············|·············|·············|··············|··············
 |  RewardsManager                              ·     1651492  ·    1651516  ·    1651512  ·      24.6 %  ·          -  │
 ·----------------------------------------------|--------------|-------------|-------------|--------------|-------------·

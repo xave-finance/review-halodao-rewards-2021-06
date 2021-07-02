@@ -9,7 +9,8 @@
 - **Lead reviewer** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn))
 - **Reviewers** Daniel Luca ([@cleanunicorn](https://twitter.com/cleanunicorn)), Andrei Simion ([@andreiashu](https://twitter.com/andreiashu))
 - **Repository**: [{{project_name}}]({{source_repository}})
-- **Commit hash** `{{commit_hash}}`
+- **Initial commit hash** `{{commit_hash}}`
+- **Final commit hash** `{{final_hash}}`
 - **Technologies**
   - Solidity
   - Node.JS
@@ -30,13 +31,21 @@ The review was conducted over the course of **{{review_period}}** from **{{date_
 
 ### Week 1
 
-During the first week, we ...
+Before the beginning of the first week, we set up a kickoff meeting on Friday to ensure we have all the details to start the audit. This meeting was recorded and shared with all the parties involved in this review.
+
+We started the following week by creating a code snapshot at commit hash `{{commit_hash}}`. We started using our arsenal of tools to make the graphs and descriptions of the contracts in scope. We proceeded to review the rest of the code manually.
+
+Because there were no major issues, we gave access to the development team to the minor issues we found. This gave them the time and opportunity to provide fixes for them during the current week. We continued to review the code, but we found no major issues.
+
+Towards the end of the week, we set up a meeting to present the current state of the report. 
+
+We also received a new commit hash `{{final_hash}}` that included fixes for the presented issues and included that in the report.
 
 ## Scope
 
-The initial review focused on the [{{project_name}}]({{source_repository}}) repository, identified by the commit hash `{{commit_hash}}`. ...
+The initial review focused on the [{{project_name}}]({{source_repository}}) repository, identified by the commit hash `{{commit_hash}}`.
 
-<!-- We focused on manually reviewing the codebase, searching for security issues such as, but not limited to, re-entrancy problems, transaction ordering, block timestamp dependency, exception handling, call stack depth limitation, integer overflow/underflow, self-destructible contracts, unsecured balance, use of origin, costly gas patterns, architectural problems, code readability. -->
+We focused on manually reviewing the codebase, searching for security issues such as, but not limited to, re-entrancy problems, transaction ordering, block timestamp dependency, exception handling, call stack depth limitation, integer overflow/underflow, self-destructible contracts, unsecured balance, use of origin, costly gas patterns, architectural problems, code readability.
 
 **Includes:**
 - HaloHalo.sol
@@ -444,9 +453,7 @@ Deployed Rewards Manager Contract address: 0x2Cc79B6860Fd7b58f0Fb56B4f448c13C7e8
 ···············································|··············|·············|·············|··············|··············
 |  HaloToken                                   ·           -  ·          -  ·    1910204  ·      28.4 %  ·          -  │
 ···············································|··············|·············|·············|··············|··············
-|  LpToken                                     ·           -  ·          -  ·    1750829  ·      26.1 %  ·          -  │     NO❗️            |
-|         └          |                 add                 |           Public ❗️            |       🛑        |         onlyOwner         |
-|         └          |                 set                 |           Public ❗️            |       🛑        |         
+|  LpToken                                     ·           -  ·          -  ·    1750829  ·      26.1 %  ·          -  │
 ···············································|··············|·············|·············|··············|··············
 |  RewardsManager                              ·     1651492  ·    1651516  ·    1651512  ·      24.6 %  ·          -  │
 ·----------------------------------------------|--------------|-------------|-------------|--------------|-------------·
